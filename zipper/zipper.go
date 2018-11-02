@@ -636,13 +636,13 @@ func (z *Zipper) Render(ctx context.Context, logger *zap.Logger, target string, 
 	}
 
 	if len(responses) == 0 {
-		return nil, stats, errors.New(errNoResponses)
+		return nil, stats, errors.New(errNoResponses + ": " + rewrite.RequestURI())
 	}
 
 	servers, metrics := z.mergeResponses(responses, stats)
 
 	if metrics == nil {
-		return nil, stats, errors.New(errNoMetricsFetched)
+		return nil, stats, errors.New(errNoMetricsFetched + ": " + rewrite.RequestURI())
 	}
 
 	z.pathCache.Set(target, servers)
@@ -722,7 +722,7 @@ func (z *Zipper) Find(ctx context.Context, logger *zap.Logger, query string) ([]
 		responses := z.multiGet(ctx, logger, backends, rewrite.RequestURI(), stats)
 
 		if len(responses) == 0 {
-			return nil, stats, errors.New(errNoResponses)
+			return nil, stats, errors.New(errNoResponses + ": " + rewrite.RequestURI())
 		}
 
 		m, paths := z.findUnpackPB(responses, stats)
