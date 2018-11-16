@@ -687,7 +687,7 @@ func (z *Zipper) Info(ctx context.Context, logger *zap.Logger, target string) (m
 
 	if len(responses) == 0 {
 		stats.InfoErrors++
-		return nil, stats, errors.New(errNoResponses)
+		return nil, stats, errors.New(errNoResponses + ": " + rewrite.RequestURI())
 	}
 
 	infos := z.infoUnpackPB(responses, stats)
