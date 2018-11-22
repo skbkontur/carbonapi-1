@@ -468,6 +468,7 @@ func (z *Zipper) singleGet(ctx context.Context, logger *zap.Logger, uri, server 
 	if resp.StatusCode == http.StatusNotFound {
 		// carbonsserver replies with Not Found if we request a
 		// metric that it doesn't have -- makes sense
+		logger.Warn("not found")
 		ch <- ServerResponse{server: server, response: nil, err: nil}
 		return
 	}
@@ -493,6 +494,15 @@ func (z *Zipper) singleGet(ctx context.Context, logger *zap.Logger, uri, server 
 
 		ch <- ServerResponse{server: server, response: nil, err: errors.Wrap(err, "Error reading body")}
 		return
+	}
+
+	if resp.ContentLength == 0 {
+		logger.Warn(fmt.Sprintf("Empty response"))
+	} else if len(body) > -1 {
+		es := make([]zap.Field, 0, 2)
+		es = append(es, zap.Namespace("errors"))
+		es = append(es, zap.Int64("header_content_length", resp.ContentLength))
+		logger.With(es...).Warn("Errors in responses")
 	}
 
 	ch <- ServerResponse{server: server, response: body, err: nil}
