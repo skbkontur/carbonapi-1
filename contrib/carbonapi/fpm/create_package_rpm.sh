@@ -26,9 +26,9 @@ egrep -q '^[0-9]+\.[a-z0-9]+$' <<< ${RELEASE} || {
 
 TMPDIR=$(mktemp -d)
 echo ${VERSION}-${RELEASE}
-mkdir -p "${TMPDIR}/usr/bin" "${TMPDIR}/usr/share" || die 1 "Can't create install dir"
+mkdir -p "${TMPDIR}/usr/bin" "${TMPDIR}/usr/share/carbonapi" || die 1 "Can't create install dir"
 cp ./carbonapi "${TMPDIR}/usr/bin" || die 1 "Can't install package"
-cp ./cmd/carbonapi/*.example.* "${TMPDIR}/usr/share" || die 1 "Can't install share"
+cp ./cmd/carbonapi/*.example.* "${TMPDIR}/usr/share/carbonapi" || die 1 "Can't install share"
 mkdir -p "${TMPDIR}"/etc/systemd/system/
 mkdir -p "${TMPDIR}"/etc/sysconfig/
 cp ./contrib/carbonapi/rhel/carbonapi.service "${TMPDIR}"/etc/systemd/system/
