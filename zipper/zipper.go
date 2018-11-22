@@ -511,6 +511,8 @@ func (z *Zipper) multiGet(ctx context.Context, logger *zap.Logger, servers []str
 		)
 	}
 
+	start := time.Now()
+
 	// buffered channel so the goroutines don't block on send
 	ch := make(chan ServerResponse, len(servers))
 	for _, server := range servers {
@@ -561,6 +563,16 @@ GATHER:
 		default:
 			errs[t.Error()] = append(errs[t.Error()], r.server)
 		}
+	}
+
+	if len(respOK) == 0 {
+		if ce := logger.Check(zap.WarnLevel, "No responses fetched from upstream"); ce != nil {
+			ce.Write(
+				zap.Strings("servers", servers),
+				zap.Duration("elapsed", time.Since(start)),
+			)
+		}
+
 	}
 
 	if len(errs) > 0 {
