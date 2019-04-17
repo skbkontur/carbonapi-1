@@ -257,6 +257,14 @@ func (app *App) renderHandler(w http.ResponseWriter, r *http.Request) {
 	qtz := r.FormValue("tz")
 	from32 := date.DateParamToEpoch(from, qtz, timeNow().Add(-24*time.Hour).Unix(), app.defaultTimeZone)
 	until32 := date.DateParamToEpoch(until, qtz, timeNow().Unix(), app.defaultTimeZone)
+	if from32 < until32-60*60*24*365*5 { // Over 4 years, too many
+		http.Error(w, "Too long time range", http.StatusBadRequest)
+		accessLogDetails.HttpCode = http.StatusBadRequest
+		accessLogDetails.Reason = fmt.Sprintf("too long time range, from: %d, until: %d", from32, until32)
+		logAsError = true
+		return
+
+	}
 
 	accessLogDetails.UseCache = useCache
 	accessLogDetails.FromRaw = from
