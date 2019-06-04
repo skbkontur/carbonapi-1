@@ -275,6 +275,8 @@ func (b Backend) do(ctx context.Context, trace types.Trace, req *http.Request) (
 
 		if res.resp.StatusCode != http.StatusOK {
 			return "", body, ErrHTTPCode(res.resp.StatusCode)
+		} else if len(body) == 0 { // fix for empty responce
+			return res.resp.Header.Get("Content-Type"), nil, ErrHTTPCode(http.StatusNotFound)
 		}
 
 		return res.resp.Header.Get("Content-Type"), body, nil
