@@ -52,6 +52,7 @@ import (
 	"github.com/bookingcom/carbonapi/expr/functions/lowPass"
 	"github.com/bookingcom/carbonapi/expr/functions/lowest"
 	"github.com/bookingcom/carbonapi/expr/functions/mapSeries"
+	"github.com/bookingcom/carbonapi/expr/functions/medianOfSeries"
 	"github.com/bookingcom/carbonapi/expr/functions/minMax"
 	"github.com/bookingcom/carbonapi/expr/functions/mostDeviant"
 	"github.com/bookingcom/carbonapi/expr/functions/moving"
@@ -227,6 +228,8 @@ func New(configs map[string]string) {
 	funcs = append(funcs, initFunc{name: "perSecond", order: perSecond.GetOrder(), f: perSecond.New})
 
 	funcs = append(funcs, initFunc{name: "percentileOfSeries", order: percentileOfSeries.GetOrder(), f: percentileOfSeries.New})
+
+	funcs = append(funcs, initFunc{name: "medianOfSeries", order: medianOfSeries.GetOrder(), f: medianOfSeries.New})
 
 	funcs = append(funcs, initFunc{name: "polyfit", order: polyfit.GetOrder(), f: polyfit.New})
 
