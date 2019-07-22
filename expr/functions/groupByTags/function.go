@@ -89,9 +89,9 @@ func (f *groupByTags) Do(e parser.Expr, from, until int32, values map[parser.Met
 		}
 
 		r, err := f.Evaluator.EvalExpr(nexpr, from, until, nvalues)
-		if err != nil {
-			return nil, err
-		}
+		//if err != nil {
+		//return nil, err
+		//}
 		if r != nil {
 			r[0].Name = names[k] + k
 			results = append(results, r...)

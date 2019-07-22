@@ -302,7 +302,7 @@ func SummarizeValues(f string, values []float64) float64 {
 	case "count":
 		rv = float64(len(values))
 	//case "stddev":
-	//rv = math.Sqrt(VarianceValue(values))
+	//	rv = math.Sqrt(VarianceValue(values))
 	default:
 		f = strings.Split(f, "p")[1]
 		percent, err := strconv.ParseFloat(f, 64)
