@@ -4,6 +4,7 @@ package net
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -584,4 +585,53 @@ func carbonapiV2FindEncoder(u *url.URL, query string) (*url.URL, io.Reader) {
 	u.RawQuery = vals.Encode()
 
 	return u, nil
+}
+
+func (b Backend) doTagQuery(ctx context.Context, isTagName bool, request types.TagsRequest, limit int64) ([]string, error) {
+	var u *url.URL
+	if isTagName {
+		u = b.url("/tags/autoComplete/tags")
+	} else {
+		u = b.url("/tags/autoComplete/values")
+	}
+	u.RawQuery = request.Query
+
+	var r []string
+
+	t0 := time.Now()
+	request.Trace.AddMarshal(t0)
+
+	_, resp, err := b.call(ctx, request.Trace, u, nil)
+	if err != nil {
+		if ctx.Err() != nil {
+			return r, NewErrHTTPCode(http.StatusGatewayTimeout, ctx.Err().Error())
+		}
+
+		if code, ok := err.(*ErrHTTPCode); ok && code.code == http.StatusNotFound {
+			return r, types.ErrTagsNotFound
+		}
+
+		return r, err
+	}
+	t1 := time.Now()
+	defer func() {
+		request.Trace.AddUnmarshal(t1)
+	}()
+
+	err = json.Unmarshal(resp, &r)
+	if err != nil {
+		return r, errors.Wrap(err, "JSON unmarshal failed")
+	} else if len(r) == 0 {
+		return r, types.ErrTagsNotFound
+	}
+
+	return r, nil
+}
+
+func (b Backend) TagNames(ctx context.Context, request types.TagsRequest, limit int64) ([]string, error) {
+	return b.doTagQuery(ctx, true, request, limit)
+}
+
+func (b Backend) TagValues(ctx context.Context, request types.TagsRequest, limit int64) ([]string, error) {
+	return b.doTagQuery(ctx, false, request, limit)
 }
