@@ -243,7 +243,7 @@ func (app *App) renderHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-	} else if partiallyFailed {
+	} else if partiallyFailed && !app.config.AllowPartialFail {
 		writeError(ctx, r, w, http.StatusInternalServerError, totalErrStr, form)
 		toLog.HttpCode = http.StatusInternalServerError
 		logAsError = true

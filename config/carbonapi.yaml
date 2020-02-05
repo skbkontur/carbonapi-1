@@ -10,6 +10,8 @@
 # Listen address, should always include hostname or ip address and a port.
 listen: ":8081"
 listenInternal: ":7081"
+# Allow query to success if some targets failed
+allowPartialFail: false
 # Max concurrent requests to CarbonZipper
 concurrencyLimitPerServer: 1025
 concurrencyLimit: 1024
