@@ -1,11 +1,13 @@
 package mapSeries
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/bookingcom/carbonapi/expr/helper"
 	"github.com/bookingcom/carbonapi/expr/interfaces"
 	"github.com/bookingcom/carbonapi/expr/types"
 	"github.com/bookingcom/carbonapi/pkg/parser"
-	"strings"
 )
 
 type mapSeries struct {
@@ -51,6 +53,9 @@ func (f *mapSeries) Do(e parser.Expr, from, until int32, values map[parser.Metri
 		nodes := strings.Split(metric, ".")
 		nodeKey := make([]string, 0, len(fields))
 		for _, f := range fields {
+			if len(nodes) <= f {
+				return nil, fmt.Errorf("returned invalid metric name: %s", a.Name)
+			}
 			nodeKey = append(nodeKey, nodes[f])
 		}
 		node := strings.Join(nodeKey, ".")
