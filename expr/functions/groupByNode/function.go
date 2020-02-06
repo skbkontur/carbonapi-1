@@ -71,6 +71,9 @@ func (f *groupByNode) Do(e parser.Expr, from, until int32, values map[parser.Met
 		nodes := strings.Split(metric, ".")
 		nodeKey := make([]string, 0, len(fields))
 		for _, f := range fields {
+			if len(nodes) <= f {
+				return nil, fmt.Errorf("returned invalid metric name: %s", a.Name)
+			}
 			nodeKey = append(nodeKey, nodes[f])
 		}
 		node := strings.Join(nodeKey, ".")

@@ -243,6 +243,12 @@ func (app *App) renderHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+	} else if partiallyFailed && !app.config.AllowPartialFail {
+		writeError(ctx, r, w, http.StatusInternalServerError, totalErrStr, form)
+		toLog.HttpCode = http.StatusInternalServerError
+		logAsError = true
+		return
+
 	}
 
 	body, err := app.renderWriteBody(results, form, r, logger)
@@ -432,7 +438,12 @@ func optimistFanIn(errs []error, n int, subj string) (error, string) {
 	allErrorsNotFound := true
 	errStr := ""
 	for _, e := range errs {
-		if _, ok := e.(dataTypes.ErrNotFound); !ok {
+		if _, ok := e.(dataTypes.ErrNotFound); ok {
+			if optimisticCode == http.StatusOK {
+				optimisticCode = http.StatusNotFound
+			}
+			continue
+		} else if allErrorsNotFound {
 			allErrorsNotFound = false
 		}
 		eCode, ok := e.(*nt.ErrHTTPCode)
@@ -450,16 +461,12 @@ func optimistFanIn(errs []error, n int, subj string) (error, string) {
 				errStr = errStr + ", " + err
 			}
 		}
-		if !ok {
-			if optimisticCode == http.StatusOK {
-				if ok {
-					optimisticCode = http.StatusServiceUnavailable
-				} else {
-					optimisticCode = http.StatusInternalServerError
-				}
+		if ok {
+			if optimisticCode == http.StatusOK || optimisticCode == http.StatusNotFound || optimisticCode > eCode.Code() {
+				optimisticCode = eCode.Code()
 			}
-		} else if optimisticCode == http.StatusOK || optimisticCode == -1 || optimisticCode > eCode.Code() {
-			optimisticCode = eCode.Code()
+		} else {
+			optimisticCode = http.StatusInternalServerError
 		}
 	}
 

@@ -143,7 +143,7 @@ func (f *asPercent) Do(e parser.Expr, from, until int32, values map[parser.Metri
 			return result[0], nil
 		}
 
-		groupByNodes := func(seriesList []*types.MetricData, nodeIndexes []int) (map[string][]*types.MetricData, []string) {
+		groupByNodes := func(seriesList []*types.MetricData, nodeIndexes []int) (map[string][]*types.MetricData, []string, error) {
 			var nodeKeys []string
 			groups := make(map[string][]*types.MetricData)
 
@@ -152,6 +152,9 @@ func (f *asPercent) Do(e parser.Expr, from, until int32, values map[parser.Metri
 				nodes := strings.Split(metric, ".")
 				nodeKey := make([]string, 0, len(nodeIndexes))
 				for _, index := range nodeIndexes {
+					if len(nodes) <= index {
+						return nil, nil, fmt.Errorf("returned invalid metric name: %s", series.Name)
+					}
 					nodeKey = append(nodeKey, nodes[index])
 				}
 				node := strings.Join(nodeKey, ".")
@@ -164,7 +167,7 @@ func (f *asPercent) Do(e parser.Expr, from, until int32, values map[parser.Metri
 				groups[node] = append(groups[node], series)
 			}
 
-			return groups, nodeKeys
+			return groups, nodeKeys, nil
 		}
 
 		distinct := func(slice []string) []string {
@@ -179,7 +182,10 @@ func (f *asPercent) Do(e parser.Expr, from, until int32, values map[parser.Metri
 			return list
 		}
 
-		metaSeriesGroup, metaKeys := groupByNodes(arg, nodeIndexes)
+		metaSeriesGroup, metaKeys, err := groupByNodes(arg, nodeIndexes)
+		if err != nil {
+			return nil, err
+		}
 
 		totalSeriesGroup := make(map[string]*types.MetricData)
 		var groups map[string][]*types.MetricData
@@ -188,7 +194,10 @@ func (f *asPercent) Do(e parser.Expr, from, until int32, values map[parser.Metri
 		if len(total) == 0 {
 			groups, groupKeys = metaSeriesGroup, metaKeys
 		} else {
-			groups, groupKeys = groupByNodes(total, nodeIndexes)
+			groups, groupKeys, err = groupByNodes(total, nodeIndexes)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		for _, nodeKey := range groupKeys {

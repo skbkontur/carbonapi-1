@@ -60,6 +60,7 @@ func DefaultAPIConfig() API {
 	cfg := API{
 		Zipper: fromCommon(DefaultCommonConfig()),
 
+		AllowPartialFail:      false,
 		ExtrapolateExperiment: false,
 		SendGlobsAsIs:         false,
 		AlwaysSendGlobsAsIs:   false,
@@ -85,6 +86,7 @@ type API struct {
 
 	// TODO (grzkv): Move backends list to a single backend here
 
+	AllowPartialFail        bool          `yaml:"allowPartialFail"`
 	ExtrapolateExperiment   bool          `yaml:"extrapolateExperiment"`
 	SendGlobsAsIs           bool          `yaml:"sendGlobsAsIs"`
 	AlwaysSendGlobsAsIs     bool          `yaml:"alwaysSendGlobsAsIs"`
