@@ -1,6 +1,7 @@
 package aliasByTags
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -19,6 +20,27 @@ func init() {
 	for _, m := range md {
 		metadata.RegisterFunction(m.Name, m.F)
 	}
+}
+
+func TestMetricToTagMap(t *testing.T) {
+	var tests = []struct {
+		input  string
+		output map[string]string
+	}{
+		{"metric1;foo=bar;baz=bam", map[string]string{"name": "metric1", "foo": "bar", "baz": "bam"}},
+		{"metric1.foo.bar.baz;foo=bar;baz=bam", map[string]string{"name": "metric1.foo.bar.baz", "foo": "bar", "baz": "bam"}},
+		{"movingAverage(metric1.foo.bar.baz;foo=bar;baz=bam,'1min)", map[string]string{"name": "metric1.foo.bar.baz", "foo": "bar", "baz": "bam"}},
+		{"fakeFunc(metric1.foo.bar.baz;foo=bar;baz=bam)", map[string]string{"name": "metric1.foo.bar.baz", "foo": "bar", "baz": "bam"}},
+	}
+
+	for _, tt := range tests {
+		got := metricToTagMap(tt.input)
+
+		if !reflect.DeepEqual(got, tt.output) {
+			t.Errorf("metricToTagMap(%q)=%v, want %v", tt.input, got, tt.output)
+		}
+	}
+
 }
 
 func TestAliasByTags(t *testing.T) {
