@@ -30,6 +30,18 @@ func New(configFile string) []interfaces.FunctionMetadata {
 
 func metricToTagMap(s string) map[string]string {
 	r := make(map[string]string)
+	length := len(s)
+	if length == 0 {
+		return r
+	}
+	if start := strings.Index(s, "("); start >= 0 && s[length-1] == ')' {
+		// May be movingAverage(metric1.foo.bar.baz;foo=bar;baz=bam,'1min)
+		if end := strings.Index(s, ","); end != -1 {
+			s = s[start+1 : end]
+		} else {
+			s = s[start+1 : length-1]
+		}
+	}
 	for _, p := range strings.Split(s, ";") {
 		if strings.Contains(p, "=") {
 			tagValue := strings.SplitN(p, "=", 2)
