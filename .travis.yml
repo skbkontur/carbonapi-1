@@ -1,5 +1,6 @@
 language: go
 dist: trusty
+go_import_path: github.com/bookingcom/carbonapi
 
 sudo: required
 
